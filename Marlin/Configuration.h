@@ -601,9 +601,9 @@
     #define DEFAULT_Ki_LIST {   1.08,   1.08 }
     #define DEFAULT_Kd_LIST { 114.00, 114.00 }
   #else
-    #define DEFAULT_Kp  30.23
-    #define DEFAULT_Ki   2.58
-    #define DEFAULT_Kd  88.47
+    #define DEFAULT_Kp  22.95
+    #define DEFAULT_Ki   1.78
+    #define DEFAULT_Kd  74.06
   #endif
 #endif // PIDTEMP
 
@@ -917,7 +917,7 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 140.90 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 139.50 }
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -1593,7 +1593,7 @@
 #if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 3
+  #define GRID_MAX_POINTS_X 5
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column

@@ -30,7 +30,7 @@
 
 #include "dwin.h"
 
-#if ANY(AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_3POINT) && DISABLED(PROBE_MANUALLY)
+#if ENABLED(LCD_BED_LEVELING) && DISABLED(PROBE_MANUALLY) && ANY(AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_3POINT)
   #define HAS_ONESTEP_LEVELING 1
 #endif
 
@@ -579,14 +579,8 @@ void DWIN_Draw_Label(const uint8_t row, const __FlashStringHelper *title) {
 }
 
 void DWIN_Draw_Signed_Float(uint8_t size, uint16_t bColor, uint8_t iNum, uint8_t fNum, uint16_t x, uint16_t y, long value) {
-  if (value < 0) {
-    DWIN_Draw_String(true, size, Color_White, bColor, x - 8, y, F("-"));
-    DWIN_Draw_FloatValue(true, true, 0, size, Color_White, bColor, iNum, fNum, x, y, -value);
-  }
-  else {
-    DWIN_Draw_String(true, size, Color_White, bColor, x - 8, y, F(" "));
-    DWIN_Draw_FloatValue(true, true, 0, size, Color_White, bColor, iNum, fNum, x, y, value);
-  }
+  DWIN_Draw_String(true, size, Color_White, bColor, x - 8, y, value < 0 ? F("-") : F(" "));
+  DWIN_Draw_FloatValue(true, true, 0, size, Color_White, bColor, iNum, fNum, x, y, value < 0 ? -value : value);
 }
 
 void Draw_Edit_Integer3(const uint8_t row, const uint16_t value, const bool active=false) {
@@ -856,9 +850,8 @@ void Draw_Control_Menu() {
   #define CLINE(L) MBASE(CSCROL(L))
   #define CVISI(L) VISI(CONTROL_CASE_TOTAL, L, CSCROL(L))
 
-  // "Control" Title
   if (HMI_IsChinese())
-    DWIN_Frame_TitleCopy(103, 1, 28, 14);
+    DWIN_Frame_TitleCopy(103, 1, 28, 14);     // "Control"
   else {
     #ifdef USE_STRING_HEADINGS
       Draw_Title(GET_TEXT_F(MSG_CONTROL));
@@ -2028,8 +2021,8 @@ void Draw_Info_Menu() {
     DWIN_Frame_TitleCopy(30, 17, 28, 13);                   // "Info"
 
     DWIN_Frame_AreaCopy(1, 197, 149, 252, 161, 108, 102);   // "Size"
-    DWIN_Frame_AreaCopy(1, 1, 164, 56, 176, 108, 175);      // "Firmware Version"
-    DWIN_Frame_AreaCopy(1, 58, 164, 113, 176, 105, 248);    // "Contact Details"
+    DWIN_Frame_AreaCopy(1,   1, 164,  56, 176, 108, 175);   // "Firmware Version"
+    DWIN_Frame_AreaCopy(1,  58, 164, 113, 176, 105, 248);   // "Contact Details"
   }
   else {
     #ifdef USE_STRING_HEADINGS
@@ -2432,9 +2425,9 @@ void Item_Adv_HomeOffsets(const uint8_t row) {
     }
     else {
       #ifdef USE_STRING_TITLES
-        DWIN_Draw_Label(row, GET_TEXT_F(MSG_SET_HOME_OFFSETS));
+        DWIN_Draw_Label(row, GET_TEXT_F(MSG_ZPROBE_OFFSETS));
       #else
-        say_probe_offs_en(0, row);
+        say_probe_offs_en(row);
       #endif
     }
     Draw_Menu_Line(row, ICON_ProbeOff);
@@ -2502,11 +2495,16 @@ void Draw_AdvancedSettings_Menu() {
   #define ASCROL(L) (scroll + (L))
   #define AVISI(L) VISI(ADVSET_CASE_TOTAL, L, ASCROL(L))
 
-  #ifdef USE_STRING_HEADINGS
-    Draw_Title(GET_TEXT_F(MSG_ADVANCED_SETTINGS));
-  #else
-    DWIN_Frame_TitleCopy(93, 401, 126, 15); // "Advanced Settings"
-  #endif
+  if (false && HMI_IsChinese()) {
+    // TODO: Chinese "Advanced Settings"
+  }
+  else {
+    #ifdef USE_STRING_HEADINGS
+      Draw_Title(GET_TEXT_F(MSG_ADVANCED_SETTINGS));
+    #else
+      DWIN_Frame_TitleCopy(93, 401, 126, 15); // "Advanced Settings"
+    #endif
+  }
 
   if (AVISI(0)) Draw_Back_First(select_advset.now == 0);
   if (AVISI(ADVSET_CASE_HOMEOFF)) Item_Adv_HomeOffsets(ASCROL(ADVSET_CASE_HOMEOFF));      // Set Home Offsets >

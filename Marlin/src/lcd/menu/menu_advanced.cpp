@@ -84,10 +84,10 @@ void menu_backlash();
     BACK_ITEM(MSG_ADVANCED_SETTINGS);
     #define EDIT_CURRENT_PWM(LABEL,I) EDIT_ITEM_P(long5, PSTR(LABEL), &stepper.motor_current_setting[I], 100, 2000, stepper.refresh_motor_power)
     #if ANY_PIN(MOTOR_CURRENT_PWM_XY, MOTOR_CURRENT_PWM_X, MOTOR_CURRENT_PWM_Y)
-      EDIT_CURRENT_PWM(STR_X STR_Y, 0);
+      EDIT_CURRENT_PWM(STR_A STR_B, 0);
     #endif
     #if PIN_EXISTS(MOTOR_CURRENT_PWM_Z)
-      EDIT_CURRENT_PWM(STR_Z, 1);
+      EDIT_CURRENT_PWM(STR_C, 1);
     #endif
     #if PIN_EXISTS(MOTOR_CURRENT_PWM_E)
       EDIT_CURRENT_PWM(STR_E, 2);
@@ -466,9 +466,11 @@ void menu_backlash();
         #ifdef MAX_JERK_EDIT_VALUES
           MAX_JERK_EDIT_VALUES
         #elif ENABLED(LIMITED_JERK_EDITING)
-          { (DEFAULT_XJERK) * 2, (DEFAULT_YJERK) * 2, (DEFAULT_ZJERK) * 2, (DEFAULT_EJERK) * 2 }
+          { LOGICAL_AXIS_LIST((DEFAULT_EJERK) * 2,
+                              (DEFAULT_XJERK) * 2, (DEFAULT_YJERK) * 2, (DEFAULT_ZJERK) * 2,
+                              (DEFAULT_IJERK) * 2, (DEFAULT_JJERK) * 2, (DEFAULT_KJERK) * 2) }
         #else
-          { 990, 990, 990, 990 }
+          { LOGICAL_AXIS_LIST(990, 990, 990, 990, 990, 990, 990) }
         #endif
       ;
       #define EDIT_JERK(N) EDIT_ITEM_FAST(float3, MSG_V##N##_JERK, &planner.max_jerk[_AXIS(N)], 1, max_jerk_edit[_AXIS(N)])
@@ -506,6 +508,10 @@ void menu_backlash();
         SUBMENU(MSG_PROBE_WIZARD, goto_probe_offset_wizard);
       #endif
 
+      #if ENABLED(X_AXIS_TWIST_COMPENSATION)
+        SUBMENU(MSG_XATC, xatc_wizard_continue);
+      #endif
+
       END_MENU();
     }
   #endif
@@ -530,7 +536,7 @@ void menu_advanced_steps_per_mm() {
         if (e == active_extruder)
           planner.refresh_positioning();
         else
-          planner.steps_to_mm[E_AXIS_N(e)] = 1.0f / planner.settings.axis_steps_per_mm[E_AXIS_N(e)];
+          planner.mm_per_step[E_AXIS_N(e)] = 1.0f / planner.settings.axis_steps_per_mm[E_AXIS_N(e)];
       });
   #elif E_STEPPERS
     EDIT_ITEM_FAST(float51, MSG_E_STEPS, &planner.settings.axis_steps_per_mm[E_AXIS], 5, 9999, []{ planner.refresh_positioning(); });
@@ -555,7 +561,7 @@ void menu_advanced_settings() {
       //
       // Set Home Offsets
       //
-      ACTION_ITEM(MSG_SET_HOME_OFFSETS, []{ queue.inject_P(PSTR("M428")); ui.return_to_status(); });
+      ACTION_ITEM(MSG_SET_HOME_OFFSETS, []{ queue.inject(F("M428")); ui.return_to_status(); });
     #endif
 
     // M203 / M205 - Feedrate items
@@ -628,7 +634,7 @@ void menu_advanced_settings() {
                  didset = settings.set_sd_update_status(new_state);
       ui.completion_feedback(didset);
       ui.return_to_status();
-      if (new_state) LCD_MESSAGEPGM(MSG_RESET_PRINTER); else ui.reset_status();
+      if (new_state) LCD_MESSAGE(MSG_RESET_PRINTER); else ui.reset_status();
     });
   #endif
 

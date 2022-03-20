@@ -63,6 +63,13 @@ abc_float_t delta_diagonal_rod_trim;
 
 float delta_safe_distance_from_top();
 
+void refresh_delta_clip_start_height() {
+  delta_clip_start_height = TERN(HAS_SOFTWARE_ENDSTOPS,
+    soft_endstop.max.z,
+    DIFF_TERN(HAS_BED_PROBE, delta_height, probe.offset.z)
+  ) - delta_safe_distance_from_top();
+}
+
 /**
  * Recalculate factors used for delta kinematics whenever
  * settings have been changed (e.g., by M665).
@@ -81,28 +88,6 @@ void recalc_delta_settings() {
   update_software_endstops(Z_AXIS);
   set_all_unhomed();
 }
-
-/**
- * Get a safe radius for calibration
- */
-
-#if EITHER(DELTA_AUTO_CALIBRATION, DELTA_CALIBRATION_MENU)
-
-  #if ENABLED(DELTA_AUTO_CALIBRATION)
-    float calibration_radius_factor = 1;
-  #endif
-
-  float delta_calibration_radius() {
-    return calibration_radius_factor * (
-      #if HAS_BED_PROBE
-        FLOOR((DELTA_PRINTABLE_RADIUS) - _MAX(HYPOT(probe.offset_xy.x, probe.offset_xy.y), PROBING_MARGIN))
-      #else
-        DELTA_PRINTABLE_RADIUS
-      #endif
-    );
-  }
-
-#endif
 
 /**
  * Delta Inverse Kinematics
@@ -254,7 +239,7 @@ void home_delta() {
   current_position.z = DIFF_TERN(HAS_BED_PROBE, delta_height + 10, probe.offset.z);
   line_to_current_position(homing_feedrate(Z_AXIS));
   planner.synchronize();
-  TERN_(SENSORLESS_PROBING,endstops.report_states());
+  TERN_(HAS_DELTA_SENSORLESS_PROBING, endstops.report_states());
 
   // Re-enable stealthChop if used. Disable diag1 pin on driver.
   #if ENABLED(SENSORLESS_HOMING) && DISABLED(ENDSTOPS_ALWAYS_ON_DEFAULT)

@@ -63,7 +63,7 @@ void Mixer::normalize(const uint8_t tool_index) {
   #ifdef MIXER_NORMALIZER_DEBUG
     SERIAL_ECHOPGM("Mixer: Old relation : [ ");
     MIXER_STEPPER_LOOP(i) {
-      SERIAL_ECHO_F(collector[i] / csum, 3);
+      SERIAL_DECIMAL(collector[i] / csum);
       SERIAL_CHAR(' ');
     }
     SERIAL_ECHOLNPGM("]");
@@ -154,11 +154,11 @@ void Mixer::refresh_collector(const float proportion/*=1.0*/, const uint8_t t/*=
     cmax = _MAX(cmax, v);
     csum += v;
   }
-  //SERIAL_ECHOPAIR("Mixer::refresh_collector(", proportion, ", ", t, ") cmax=", cmax, "  csum=", csum, "  color");
+  //SERIAL_ECHOPGM("Mixer::refresh_collector(", proportion, ", ", t, ") cmax=", cmax, "  csum=", csum, "  color");
   const float inv_prop = proportion / csum;
   MIXER_STEPPER_LOOP(i) {
     c[i] = color[t][i] * inv_prop;
-    //SERIAL_ECHOPAIR(" [", t, "][", i, "] = ", color[t][i], " (", c[i], ")  ");
+    //SERIAL_ECHOPGM(" [", t, "][", i, "] = ", color[t][i], " (", c[i], ")  ");
   }
   //SERIAL_EOL();
 }

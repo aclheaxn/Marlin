@@ -21,6 +21,7 @@
  */
 #pragma once
 
+<<<<<<<< HEAD:Marlin/src/lcd/language/language_el_CY.h
 /**
  * Greek (Cyprus)
  *
@@ -36,3 +37,13 @@ namespace Language_el_CY {
   constexpr uint8_t CHARSIZE              = 2;
   LSTR LANGUAGE                           = _UxGT("Greek (Cyprus)");
 }
+========
+#include "../DGUSScreenHandlerBase.h"
+
+typedef DGUSScreenHandler DGUSScreenHandlerClass;
+
+#if ENABLED(POWER_LOSS_RECOVERY)
+  #define PLR_SCREEN_RECOVER DGUSLCD_SCREEN_SDPRINTMANIPULATION
+  #define PLR_SCREEN_CANCEL DGUSLCD_SCREEN_STATUS
+#endif
+>>>>>>>> upstream/bugfix-2.0.x:Marlin/src/lcd/extui/dgus/hiprecy/DGUSScreenHandler.h

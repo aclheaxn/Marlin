@@ -143,7 +143,10 @@ uint8_t MMU2::get_current_tool() {
   #define FILAMENT_PRESENT() (READ(FIL_RUNOUT1_PIN) != FIL_RUNOUT1_STATE)
 #endif
 
-inline void ATTN_BUZZ(const bool two=false) { BUZZ(200, 404); if (two) { BUZZ(10, 0); BUZZ(200, 404); } }
+void mmu2_attn_buzz(const bool two=false) {
+  BUZZ(200, 404);
+  if (two) { BUZZ(10, 0); BUZZ(200, 404); }
+}
 
 void MMU2::mmu_loop() {
 
@@ -819,7 +822,10 @@ void MMU2::manage_response(const bool move_axes, const bool turn_off_nozzle) {
       }
 
       LCD_MESSAGE(MSG_MMU2_RESUMING);
-      ATTN_BUZZ(true);
+      mmu2_attn_buzz(true);
+
+      #pragma GCC diagnostic push
+      #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 
       if (move_axes && all_axes_homed()) {
         // Move XY to starting position, then Z
@@ -828,6 +834,8 @@ void MMU2::manage_response(const bool move_axes, const bool turn_off_nozzle) {
         // Move Z_AXIS to saved position
         do_blocking_move_to_z(resume_position.z, feedRate_t(NOZZLE_PARK_Z_FEEDRATE));
       }
+
+      #pragma GCC diagnostic pop
     }
   }
 }
@@ -896,7 +904,7 @@ void MMU2::load_filament(const uint8_t index) {
 
   command(MMU_CMD_L0 + index);
   manage_response(false, false);
-  ATTN_BUZZ();
+  mmu2_attn_buzz();
 }
 
 /**
@@ -907,7 +915,7 @@ bool MMU2::load_filament_to_nozzle(const uint8_t index) {
   if (!_enabled) return false;
 
   if (thermalManager.tooColdToExtrude(active_extruder)) {
-    ATTN_BUZZ();
+    mmu2_attn_buzz();
     LCD_ALERTMESSAGE(MSG_HOTEND_TOO_COLD);
     return false;
   }
@@ -922,7 +930,7 @@ bool MMU2::load_filament_to_nozzle(const uint8_t index) {
     extruder = index;
     active_extruder = 0;
     load_to_nozzle();
-    ATTN_BUZZ();
+    mmu2_attn_buzz();
   }
   return success;
 }
@@ -931,7 +939,7 @@ bool MMU2::load_filament_to_nozzle(const uint8_t index) {
  * Load filament to nozzle of multimaterial printer
  *
  * This function is used only after T? (user select filament) and M600 (change filament).
- * It is not used after T0 .. T4 command (select filament), in such case, gcode is responsible for loading
+ * It is not used after T0 .. T4 command (select filament), in such case, G-code is responsible for loading
  * filament to nozzle.
  */
 void MMU2::load_to_nozzle() {
@@ -943,7 +951,7 @@ bool MMU2::eject_filament(const uint8_t index, const bool recover) {
   if (!_enabled) return false;
 
   if (thermalManager.tooColdToExtrude(active_extruder)) {
-    ATTN_BUZZ();
+    mmu2_attn_buzz();
     LCD_ALERTMESSAGE(MSG_HOTEND_TOO_COLD);
     return false;
   }
@@ -959,11 +967,11 @@ bool MMU2::eject_filament(const uint8_t index, const bool recover) {
 
   if (recover)  {
     LCD_MESSAGE(MSG_MMU2_EJECT_RECOVER);
-    ATTN_BUZZ();
+    mmu2_attn_buzz();
     TERN_(HOST_PROMPT_SUPPORT, hostui.prompt_do(PROMPT_USER_CONTINUE, F("MMU2 Eject Recover"), FPSTR(CONTINUE_STR)));
     TERN_(EXTENSIBLE_UI, ExtUI::onUserConfirmRequired(F("MMU2 Eject Recover")));
     TERN_(HAS_RESUME_CONTINUE, wait_for_user_response());
-    ATTN_BUZZ(true);
+    mmu2_attn_buzz(true);
 
     command(MMU_CMD_R0);
     manage_response(false, false);
@@ -976,7 +984,7 @@ bool MMU2::eject_filament(const uint8_t index, const bool recover) {
 
   set_runout_valid(false);
 
-  ATTN_BUZZ();
+  mmu2_attn_buzz();
 
   stepper.disable_extruder();
 
@@ -991,7 +999,7 @@ bool MMU2::unload() {
   if (!_enabled) return false;
 
   if (thermalManager.tooColdToExtrude(active_extruder)) {
-    ATTN_BUZZ();
+    mmu2_attn_buzz();
     LCD_ALERTMESSAGE(MSG_HOTEND_TOO_COLD);
     return false;
   }
@@ -1002,7 +1010,7 @@ bool MMU2::unload() {
   command(MMU_CMD_U0);
   manage_response(false, true);
 
-  ATTN_BUZZ();
+  mmu2_attn_buzz();
 
   // no active tool
   extruder = MMU2_NO_TOOL;
@@ -1023,8 +1031,7 @@ void MMU2::execute_extruder_sequence(const E_Step * sequence, int steps) {
     const float es = pgm_read_float(&(step->extrude));
     const feedRate_t fr_mm_m = pgm_read_float(&(step->feedRate));
 
-    DEBUG_ECHO_START();
-    DEBUG_ECHOLNPGM("E step ", es, "/", fr_mm_m);
+    DEBUG_ECHO_MSG("E step ", es, "/", fr_mm_m);
 
     current_position.e += es;
     line_to_current_position(MMM_TO_MMS(fr_mm_m));

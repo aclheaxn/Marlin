@@ -22,7 +22,11 @@
 
 #include "../../../../inc/MarlinConfigPre.h"
 
+<<<<<<<< HEAD:Marlin/src/lcd/extui/dgus/fysetc/DGUSScreenHandler.cpp
+#if ENABLED(DGUS_LCD_UI_FYSETC)
+========
 #if ENABLED(DGUS_LCD_UI_HIPRECY)
+>>>>>>>> upstream/bugfix-2.0.x:Marlin/src/lcd/extui/dgus/hiprecy/DGUSScreenHandler.cpp
 
 #include "../DGUSScreenHandler.h"
 
@@ -85,7 +89,7 @@
 
       case 1: // Pause
 
-        GotoScreen(MKSLCD_SCREEN_PAUSE);
+        GotoScreen(DGUSLCD_SCREEN_SDPRINTMANIPULATION);
         if (!ExtUI::isPrintingFromMediaPaused()) {
           ExtUI::pausePrint();
           //ExtUI::mks_pausePrint();
@@ -333,9 +337,15 @@ void DGUSScreenHandler::HandleManualMove(DGUS_VP_Variable &var, void *val_ptr) {
     if (filament_data.action == 0) { // Go back to utility screen
       #if HAS_HOTEND
         thermalManager.setTargetHotend(e_temp, ExtUI::extruder_t::E0);
+<<<<<<<< HEAD:Marlin/src/lcd/extui/dgus/fysetc/DGUSScreenHandler.cpp
+      #endif
+      #if HAS_MULTI_HOTEND
+        thermalManager.setTargetHotend(e_temp, ExtUI::extruder_t::E1);
+========
         #if HAS_MULTI_HOTEND
           thermalManager.setTargetHotend(e_temp, ExtUI::extruder_t::E1);
         #endif
+>>>>>>>> upstream/bugfix-2.0.x:Marlin/src/lcd/extui/dgus/hiprecy/DGUSScreenHandler.cpp
       #endif
       GotoScreen(DGUSLCD_SCREEN_UTILITY);
     }
@@ -348,7 +358,11 @@ void DGUSScreenHandler::HandleManualMove(DGUS_VP_Variable &var, void *val_ptr) {
               thermalManager.setTargetHotend(e_temp, filament_data.extruder);
               break;
           #endif
+<<<<<<<< HEAD:Marlin/src/lcd/extui/dgus/fysetc/DGUSScreenHandler.cpp
+          #if HAS_MULTI_EXTRUDER
+========
           #if HAS_MULTI_HOTEND
+>>>>>>>> upstream/bugfix-2.0.x:Marlin/src/lcd/extui/dgus/hiprecy/DGUSScreenHandler.cpp
             case VP_E1_FILAMENT_LOAD_UNLOAD:
               filament_data.extruder = ExtUI::extruder_t::E1;
               thermalManager.setTargetHotend(e_temp, filament_data.extruder);
@@ -411,10 +425,27 @@ bool DGUSScreenHandler::loop() {
     if (!booted && TERN0(POWER_LOSS_RECOVERY, recovery.valid()))
       booted = true;
 
-    if (!booted && ELAPSED(ms, TERN(USE_MKS_GREEN_UI, 1000, BOOTSCREEN_TIMEOUT)))
+    if (!booted && ELAPSED(ms, BOOTSCREEN_TIMEOUT)) {
       booted = true;
+<<<<<<<< HEAD:Marlin/src/lcd/extui/dgus/fysetc/DGUSScreenHandler.cpp
+
+      if (TERN0(POWER_LOSS_RECOVERY, recovery.valid()))
+        GotoScreen(DGUSLCD_SCREEN_POWER_LOSS);
+      else
+        GotoScreen(DGUSLCD_SCREEN_MAIN);
+    }
+
+========
+      GotoScreen(TERN0(POWER_LOSS_RECOVERY, recovery.valid()) ? DGUSLCD_SCREEN_POWER_LOSS : DGUSLCD_SCREEN_MAIN);
+    }
+>>>>>>>> upstream/bugfix-2.0.x:Marlin/src/lcd/extui/dgus/hiprecy/DGUSScreenHandler.cpp
   #endif
+
   return IsScreenComplete();
 }
 
+<<<<<<<< HEAD:Marlin/src/lcd/extui/dgus/fysetc/DGUSScreenHandler.cpp
+#endif // DGUS_LCD_UI_FYSETC
+========
 #endif // DGUS_LCD_UI_HIPRECY
+>>>>>>>> upstream/bugfix-2.0.x:Marlin/src/lcd/extui/dgus/hiprecy/DGUSScreenHandler.cpp

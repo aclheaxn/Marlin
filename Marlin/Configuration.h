@@ -1237,7 +1237,7 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 143.08 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 141.66 }
 
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
@@ -1580,7 +1580,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 10
+#define PROBING_MARGIN 15
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (100*60)
